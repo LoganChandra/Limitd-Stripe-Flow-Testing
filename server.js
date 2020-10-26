@@ -25,19 +25,23 @@ app.get("/stripe-key", (req, res) => {
 
 //rendering pages
 app.get('/store', function(req, res) {
+	var userData = JSON.parse(fs.readFileSync('users.json', 'utf8'))
 	fs.readFile('items.json', function(error, data) {
 		if (error) {
 			res.status(500).end()
 		} else {
 			res.render('store.ejs', {
 				stripePublicKey: stripePublicKey,
-				items: JSON.parse(data)
+				items: JSON.parse(data),
+				loggedIn: userData,
 			})
 		}
 	})
 })
 app.get('/login', function(req, res) {
+	var userData = JSON.parse(fs.readFileSync('users.json', 'utf8'))
 	res.render('login.ejs', {
+		loggedIn: userData,
 		// stripePublicKey: stripePublicKey,
 		// items: JSON.parse(data)
 	})
@@ -45,7 +49,9 @@ app.get('/login', function(req, res) {
 })
 
 app.get('/sell', function(req, res) {
+	var userData = JSON.parse(fs.readFileSync('users.json', 'utf8'))
 	res.render('sell.ejs', {
+		loggedIn: userData,
 		// stripePublicKey: stripePublicKey,
 		// items: JSON.parse(data)
 	})
@@ -107,12 +113,38 @@ app.post('/signUp', function(req, res) {
 
 })
 
+app.post('/logIntoAcc', function(req, res){
+
+	var userData = JSON.parse(fs.readFileSync('users.json', 'utf8'))
+
+	const { password } = req.body
+	console.log(password)
+	const customer = stripe.customers.retrieve(
+		password
+	).then(function(cust){
+		console.log('customer: ', cust)
+		userData.id = cust.id
+		userData.email = cust.email
+		userData.firstName = cust.name.split(" ")[0]
+		userData.lastName = cust.name.split(" ")[1]
+		userData.password = 'password'
+
+		let writedata = JSON.stringify(userData);
+		eFileSync('users.json', writedata);
+	
+		res.end('customer received')
+	}).catch(function(e){
+		console.log(e)
+	})
+
+})
+
 app.post('/forSale', function(req, res) {
 
 	console.log('Selling shoe')
 	let userData = req.body
 	var loggedIn = JSON.parse(fs.readFileSync('users.json', 'utf8')); //reading logged in customer
-  var itemData = JSON.parse(fs.readFileSync('items.json', 'utf8'));
+  	var itemData = JSON.parse(fs.readFileSync('items.json', 'utf8'));
 
   /*-------------------------------- creating payment intent when customer sells --------------------------------*/
 
@@ -121,7 +153,8 @@ app.post('/forSale', function(req, res) {
       name: userData.name,
       price: parseInt(userData.price, 10),
       size: parseInt(userData.size, 10),
-      bidPrice: parseInt(userData.bidPrice, 10),
+	  bidPrice: parseInt(userData.bidPrice, 10),
+	  recentBidder: null,
       imgName: userData.imgName,
       seller: loggedIn.id
     }
@@ -227,6 +260,74 @@ app.post('/purchase', function(req, res) {
 			})
 		}
 	})
+})
+
+app.post('/bid', function(req, res){
+
+	const { bidId, bidVal } = req.body
+	console.log(bidId,bidVal,'back')
+	var itemData = JSON.parse(fs.readFileSync('items.json', 'utf8'));
+	var loggedIn = JSON.parse(fs.readFileSync('users.json', 'utf8')).id; //reading logged in customer
+	
+	try{
+		for (var i = 0; i < itemData.merch.length; i++) {
+			if (itemData.merch[i].id == bidId) {
+				if(itemData.merch[i].bidPrice < bidVal){
+					itemData.merch[i].bidPrice = bidVal;
+					itemData.merch[i].recentBidder = loggedIn;	
+					let writedata = JSON.stringify(itemData);
+					fs.writeFileSync('items.json', writedata);
+				}else{
+					res.end('Bid not price updated');
+					console.log('Bid price smaller than existing bid')
+			}
+			  break;
+			}else{
+				res.end('Bid price updated');
+				console.log('Customer id doesnt exist')
+			}
+		}
+		res.end('Bid price updated');
+
+	}catch (e){
+		console.log('Bid not price updated error: ', e)
+	}
+	
+
+
+})
+
+app.post('/acceptBid', function(req, res){
+	
+	const { itemId } = req.body
+	var loggedIn = JSON.parse(fs.readFileSync('users.json', 'utf8')); //reading logged in customer
+	var itemData = JSON.parse(fs.readFileSync('items.json', 'utf8'));
+	
+	let acceptItem = itemData.merch.find(x => x.id == itemId)
+	const buyerIntent = stripe.paymentIntents.create({//creating charge for last customer to place a bid 
+		amount: acceptItem.bidPrice,
+		currency: 'myr',
+		confirmation_method: "manual",//we want to choose when to confirm (on dashboard)
+		capture_method: "manual",//we want to choose when to capture
+		confirm: true,
+		customer: acceptItem.recentBidder,
+	}).then(function(result) {
+		console.log('Payment Intent created for buyer: ', acceptItem.recentBidder)
+
+		//create penalty for seller who accepted the bid payment
+		createPenalty(loggedIn.id, acceptItem.bidPrice, 0.15) //penalty is in decimal
+		.then(function(){
+			console.log('Penalty created for seller:', loggedIn.id)
+			res.end('Bid Accepted')
+		}).catch(function(error){
+			console.log('Penalty not created for seller:', loggedIn.id)
+	
+		})
+	}).catch(function(error){
+		console.log('Payment Intent not created for buyer:', acceptItem.recentBidder)
+
+	})
+	
 })
 
 //creates unique id

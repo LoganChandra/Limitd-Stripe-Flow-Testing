@@ -23,7 +23,20 @@ function ready() {
         button.addEventListener('click', addToCartClicked)
     }
 
+    var bidButtons = document.getElementsByClassName('shop-item-bid-button')
+    for (var i = 0; i < addToCartButtons.length; i++) {
+        var button = bidButtons[i]
+        button.addEventListener('click', bidClicked)
+    }
+
+    var accButtons = document.getElementsByClassName('shop-item-accept-button')
+    for (var i = 0; i < accButtons.length; i++) {
+        var button = accButtons[i]
+        button.addEventListener('click', acceptClicked)
+    }
+
     document.getElementsByClassName('btn-purchase')[0].addEventListener('click', purchaseClicked)
+
 }
 
 var stripeHandler = StripeCheckout.configure({
@@ -66,6 +79,58 @@ function purchaseClicked() {
     stripeHandler.open({
         amount: price
     })
+}
+
+function bidClicked(event) {
+    var eTarget = event.target
+    var shopItem = eTarget.parentElement.parentElement
+
+    var bidPrice = (eTarget.parentElement).getElementsByTagName('input')[0].value
+    var id = shopItem.dataset.itemId
+
+    console.log(id,bidPrice,'front')
+    fetch('/bid', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+
+            
+            bidId: id,
+            bidVal: bidPrice*100,
+            
+
+        })
+    }).then(function(res) {
+        location.reload();
+        // console.log(res)
+    })
+
+}
+
+function acceptClicked(event){
+    var eTarget = event.target
+    var shopItem = eTarget.parentElement.parentElement
+    var id = shopItem.dataset.itemId
+
+    fetch('/acceptBid', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+
+            itemId: id,
+
+        })
+    }).then(function(res) {
+
+        // console.log(res)
+    })
+
 }
 
 function removeCartItem(event) {

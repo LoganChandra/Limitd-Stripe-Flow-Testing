@@ -30,6 +30,9 @@
                 </ul>
             </nav>
             <h1 class="band-name band-name-large">The Generics</h1>
+            <h3 style="text-align: center;">Signed in</h3>
+            <h4 style="text-align: center;"><%= JSON.stringify(loggedIn) %></h4>
+
         </header>
 
         <section class="container content-section">
@@ -46,7 +49,7 @@
     
                             <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
                                 
-                            <form id="loginform" class="form-horizontal" role="form">
+                                <form id="loginform" class="form-horizontal" role="form">
                                         
                                 <div style="margin-bottom: 25px" class="input-group">
                                             <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
@@ -73,8 +76,7 @@
                                         <!-- Button -->
     
                                         <div class="col-sm-12 controls">
-                                          <a id="btn-login" href="#" class="btn btn-success">Login  </a>
-                                          <a id="btn-fblogin" href="#" class="btn btn-primary">Login with Facebook</a>
+                                          <a id="btn-login" class="btn btn-success">Login  </a>
     
                                         </div>
                                     </div>
@@ -243,7 +245,7 @@ var form = document.getElementById('signupform')
 
 document.getElementById('btn-signup').addEventListener('click', function() {
 
-	console.log('press')
+	console.log('sign up press')
 	stripe.createToken(card).then(function(result) {
 		if (result.error) {
 			// Inform the customer that there was an error.
@@ -281,6 +283,29 @@ document.getElementById('btn-signup').addEventListener('click', function() {
 		window.location.replace("http://localhost:3000/");
         console.log('Logged in')
 	});
+
+})
+
+document.getElementById('btn-login').addEventListener('click', function() {
+
+    console.log('login press')
+    fetch('/logIntoAcc', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                
+                email: $("#loginform input[name=username]").val(),
+                password: $("#loginform input[name=password]").val(),
+
+            })
+    }).then(function(res) {
+
+            console.log(res)
+            
+        })
 
 })
 
