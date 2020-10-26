@@ -130,7 +130,7 @@ app.post('/logIntoAcc', function(req, res){
 		userData.password = 'password'
 
 		let writedata = JSON.stringify(userData);
-		eFileSync('users.json', writedata);
+		fs.writeFileSync('users.json', writedata);
 	
 		res.end('customer received')
 	}).catch(function(e){
@@ -218,7 +218,7 @@ async function createPenalty(custId, price, perc) {
 		confirm: true,
 		customer: custId,
 	}).then(function(paymentIntent) {
-		console.log('Payment Intent created for: ', custId)
+		console.log('Penalty created for: ', custId)
 	})
 
 	return intent
