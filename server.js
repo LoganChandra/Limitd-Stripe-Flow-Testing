@@ -272,6 +272,7 @@ app.post('/bid', function(req, res){
 	try{
 		for (var i = 0; i < itemData.merch.length; i++) {
 			if (itemData.merch[i].id == bidId) {
+				console.log('here',itemData.merch[i].id, '==' ,bidId )
 				if(itemData.merch[i].bidPrice < bidVal){
 					itemData.merch[i].bidPrice = bidVal;
 					itemData.merch[i].recentBidder = loggedIn;	
@@ -280,12 +281,13 @@ app.post('/bid', function(req, res){
 				}else{
 					res.end('Bid not price updated');
 					console.log('Bid price smaller than existing bid')
-			}
-			  break;
+					break;
+				}
+				break;
 			}else{
 				res.end('Bid price updated');
-				console.log('Customer id doesnt exist')
-			}
+				// break;
+			}if(i == itemData.merch.length - 1){console.log('customer id doesnt exist')}
 		}
 		res.end('Bid price updated');
 
@@ -317,7 +319,7 @@ app.post('/acceptBid', function(req, res){
 		//create penalty for seller who accepted the bid payment
 		createPenalty(loggedIn.id, acceptItem.bidPrice, 0.15) //penalty is in decimal
 		.then(function(){
-			console.log('Penalty created for seller:', loggedIn.id)
+			// console.log('Penalty created for seller:', loggedIn.id)
 			res.end('Bid Accepted')
 		}).catch(function(error){
 			console.log('Penalty not created for seller:', loggedIn.id)

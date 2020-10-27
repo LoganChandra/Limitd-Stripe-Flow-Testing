@@ -11,6 +11,39 @@
         
         <script src="https://js.stripe.com/v3/"></script>
 
+        <style>
+            /**
+* The CSS shown here will not be introduced in the Quickstart guide, but
+* shows how you can use CSS to style your Element's container.
+*/
+input,
+.StripeElement {
+  height: 40px;
+  padding: 10px 12px;
+
+  color: #32325d;
+  background-color: white;
+  border: 1px solid transparent;
+  border-radius: 4px;
+
+  box-shadow: 0 1px 3px 0 #e6ebf1;
+  -webkit-transition: box-shadow 150ms ease;
+  transition: box-shadow 150ms ease;
+}
+
+input:focus,
+.StripeElement--focus {
+  box-shadow: 0 1px 3px 0 #cfd7df;
+}
+
+.StripeElement--invalid {
+  border-color: #fa755a;
+}
+
+.StripeElement--webkit-autofill {
+  background-color: #fefde5 !important;
+}
+        </style>
 
         <!-- <script src="store.js" defer></script> -->
     </head>
@@ -141,7 +174,6 @@
                                     </div>
                                         
                                     <div class="form-group">
-
                                             <form action="/charge" method="post" id="payment-form">
                                                 <div class="form-row">
                                                   <label for="card-element">
@@ -151,11 +183,40 @@
                                                   </div>
                                               
                                                   <div id="card-errors" role="alert"></div>
-                                                </div>
-                                              
-                                              </form>
-                                              
+                                                </div>         
+                                              </form>                                              
                                     </div>
+                                    <!-- <form action="/charge" method="post" id="payment-form">
+                                        <div class="form-row inline">
+                                          <div class="col">
+                                            <label for="name">
+                                              Name
+                                            </label>
+                                            <input id="name" name="name" placeholder="Jenny Rosen" required>
+                                          </div>
+                                          <div class="col">
+                                            <label for="email">
+                                              Email Address
+                                            </label>
+                                            <input id="email" name="email" type="email" placeholder="jenny.rosen@example.com" required>
+                                          </div>
+                                        </div>
+                                      
+                                        <div class="form-row">
+                                          <label for="iban-element">
+                                            IBAN
+                                          </label>
+                                          <div id="iban-element">
+                                          </div>
+                                        </div>
+                                        <div id="bank-name"></div>
+                                      
+                                        <button>Submit Payment</button>
+                                      
+                                        <div id="error-message" role="alert"></div>
+                                      
+                                        
+                                      </form> -->
     
                                     <div class="form-group">
                                         <!-- Button -->                                        
@@ -222,8 +283,81 @@ var card = elements.create('card', {
 // Add an instance of the card Element into the `card-element` <div>.
 card.mount('#card-element');
 
+/*--------------DEBIT CARD---------------*/
+
+// // Custom styling can be passed to options when creating an Element.
+// var style = {
+//   base: {
+//     // Add your base input styles here. For example:
+//     fontSize: '16px',
+//     color: "#32325d",
+//   }
+// };
+
+// var options = {
+//   style: style,
+//   supportedCountries: ['SEPA'],
+//   // If you know the country of the customer, you can optionally pass it to
+//   // the Element as placeholderCountry. The example IBAN that is being used
+//   // as placeholder reflects the IBAN format of that country.
+//   placeholderCountry: 'DE',
+// }
+
+// // Create an instance of the iban Element.
+// var iban = elements.create('iban', options);
+
+// // Add an instance of the iban Element into the `iban-element` <div>.
+// iban.mount('#iban-element');
+
+// iban.on('change', function(event) {
+//   var displayError = document.getElementById('error-message');
+//   if (event.error) {
+//     displayError.textContent = event.error.message;
+//   } else {
+//     displayError.textContent = '';
+//   }
+// });
+
+// // Create a source or display an error when the form is submitted.
+// var form = document.getElementById('btn-signup');
+
+// form.addEventListener('submit', function(event) {
+//   event.preventDefault();
+
+//   var sourceData = {
+//     type: 'sepa_debit',
+//     currency: 'eur',
+//     owner: {
+//       name: document.querySelector('input[name="name"]').value,
+//       email: document.querySelector('input[name="email"]').value,
+//     },
+//     mandate: {
+//       // Automatically send a mandate notification email to your customer
+//       // once the source is charged.
+//       notification_method: 'email',
+//     },
+//   };
+
+//   // Call `stripe.createSource` with the IBAN Element and additional options.
+//   stripe.createSource(iban, sourceData).then(function(result) {
+//     if (result.error) {
+//       // Inform the customer that there was an error.
+//       var errorElement = document.getElementById('error-message');
+//       errorElement.textContent = result.error.message;
+//     } else {
+//       // Send the Source to your server.
+//     //   stripeSourceHandler(result.source);
+//     console.log('debit source:', result.source)
+//     }
+//   });
+// });
+
+/*--------------END OF DEBIT CARD---------------*/
+
+
 // Create a token or display an error when the form is submitted.
 var form = document.getElementById('payment-form');
+
 
 /* -------------------------------- End of Stripe elements -------------------------------- */
 
@@ -241,7 +375,7 @@ document.getElementById('signinlink').addEventListener('click', function() {
 	console.log(sign_Up)
 
 })
-var form = document.getElementById('signupform')
+// var form = document.getElementById('signupform')
 
 document.getElementById('btn-signup').addEventListener('click', function() {
 
@@ -281,7 +415,7 @@ document.getElementById('btn-signup').addEventListener('click', function() {
 		}
 	}).then(function() {
 		window.location.replace("http://localhost:3000/");
-        console.log('Logged in')
+        console.log('Signed up in')
 	});
 
 })
@@ -303,7 +437,8 @@ document.getElementById('btn-login').addEventListener('click', function() {
             })
     }).then(function(res) {
 
-            console.log(res)
+        window.location.replace("http://localhost:3000/");
+        console.log('Logged in')
             
         })
 
