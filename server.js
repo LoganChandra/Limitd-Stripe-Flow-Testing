@@ -327,6 +327,7 @@ app.post("/forSale1", function (req, res) {
         const response = generateResponse(intent);
         res.send(response);
     } catch (e) {
+		console.log('intent not created',e)
         // Handle "hard declines" e.g. insufficient funds, expired card, etc
         // See https://stripe.com/docs/declines/codes for more
         res.send({
