@@ -138,72 +138,83 @@ app.post('/logIntoAcc', function(req, res){
 	})
 
 })
-
+const mailgun = require("mailgun-js");
+const DOMAIN = "sandbox6c48f7761c794a6883af5ebcb6dfc61d.mailgun.org";
+const mg = mailgun({apiKey: "fad4c9934f740c6724f6f096e90c8f1f-95f6ca46-a729f3fe", domain: DOMAIN});
+const data = {
+	from: "Mailgun Sandbox <postmaster@sandbox6c48f7761c794a6883af5ebcb6dfc61d.mailgun.org>",
+	to: "loganjchandra@gmail.com",
+	subject: "Hello",
+	template: "testtemplate",
+	'h:X-Mailgun-Variables': {test: "test"}
+};
 app.post('/forSale', function(req, res) {
+    mg.messages().send(data, function (error, body) {
+        console.log(body);
+    });
+// 	console.log('Selling shoe')
+// 	let userData = req.body
+// 	var loggedIn = JSON.parse(fs.readFileSync('users.json', 'utf8')); //reading logged in customer
+//   	var itemData = JSON.parse(fs.readFileSync('items.json', 'utf8'));
 
-	console.log('Selling shoe')
-	let userData = req.body
-	var loggedIn = JSON.parse(fs.readFileSync('users.json', 'utf8')); //reading logged in customer
-  	var itemData = JSON.parse(fs.readFileSync('items.json', 'utf8'));
+//   /*-------------------------------- creating payment intent when customer sells --------------------------------*/
 
-  /*-------------------------------- creating payment intent when customer sells --------------------------------*/
+//     var itemSold = {
+//       id: uuidv4(),
+//       name: userData.name,
+//       price: parseInt(userData.price, 10),
+//       size: parseInt(userData.size, 10),
+// 	  bidPrice: parseInt(userData.bidPrice, 10),
+// 	  recentBidder: null,
+//       imgName: userData.imgName,
+//       seller: loggedIn.id
+//     }
 
-    var itemSold = {
-      id: uuidv4(),
-      name: userData.name,
-      price: parseInt(userData.price, 10),
-      size: parseInt(userData.size, 10),
-	  bidPrice: parseInt(userData.bidPrice, 10),
-	  recentBidder: null,
-      imgName: userData.imgName,
-      seller: loggedIn.id
-    }
-
-    itemData['merch'].push(itemSold)
-    let writedata = JSON.stringify(itemData);
-    console.log('write data: ', itemSold)
-    fs.writeFileSync('items.json', writedata);
+//     itemData['merch'].push(itemSold)
+//     let writedata = JSON.stringify(itemData);
+//     console.log('write data: ', itemSold)
+//     fs.writeFileSync('items.json', writedata);
     
-    res.end('Item for sale');
+//     res.end('Item for sale');
     
-    /*-------------------------------- creating payment intent when customer sells --------------------------------*/
-		// let intent
-		// try {
-		// 	intent = stripe.paymentIntents.create({
-		// 		amount: 1500,
-		// 		currency: 'myr',
-		// 		confirmation_method: "manual",
-		// 		capture_method: "manual",
-		// 		confirm: true,
-		// 		customer: loggedIn.id,
-		// 	}).then(function(paymentIntent) {
-		// 		// intent = stripe.paymentIntents.confirm(paymentIntent.id);
-    //     console.log('Payment Intent created')
+//     /*-------------------------------- creating payment intent when customer sells --------------------------------*/
+// 		// let intent
+// 		// try {
+// 		// 	intent = stripe.paymentIntents.create({
+// 		// 		amount: 1500,
+// 		// 		currency: 'myr',
+// 		// 		confirmation_method: "manual",
+// 		// 		capture_method: "manual",
+// 		// 		confirm: true,
+// 		// 		customer: loggedIn.id,
+// 		// 	}).then(function(paymentIntent) {
+// 		// 		// intent = stripe.paymentIntents.confirm(paymentIntent.id);
+//     //     console.log('Payment Intent created')
 
-    //     //Saving to database
-    //     var itemData = JSON.parse(fs.readFileSync('items.json', 'utf8'));
-    //     var itemSold = {
-    //       id: uuidv4(),
-    //       name: userData.name,
-    //       price: parseInt(userData.price, 10),
-    //       size: parseInt(userData.size, 10),
-    //       bidPrice: parseInt(userData.bidPrice, 10),
-    //       imgName: userData.imgName,
-    //       seller: loggedIn.id
-    //     }
+//     //     //Saving to database
+//     //     var itemData = JSON.parse(fs.readFileSync('items.json', 'utf8'));
+//     //     var itemSold = {
+//     //       id: uuidv4(),
+//     //       name: userData.name,
+//     //       price: parseInt(userData.price, 10),
+//     //       size: parseInt(userData.size, 10),
+//     //       bidPrice: parseInt(userData.bidPrice, 10),
+//     //       imgName: userData.imgName,
+//     //       seller: loggedIn.id
+//     //     }
 
-    //     itemData['merch'].push(itemSold)
-    //     let writedata = JSON.stringify(itemData);
-    //     console.log('write data: ', itemSold)
-    //     fs.writeFileSync('items.json', writedata);
-    //     //end of saving to database
-		// 	})
+//     //     itemData['merch'].push(itemSold)
+//     //     let writedata = JSON.stringify(itemData);
+//     //     console.log('write data: ', itemSold)
+//     //     fs.writeFileSync('items.json', writedata);
+//     //     //end of saving to database
+// 		// 	})
 
-		// } catch (e) {
-		// 	console.log('failed to sell')
-		// 	console.log(e)
-    // }
-    // res.end('item for sale and payment intent created');
+// 		// } catch (e) {
+// 		// 	console.log('failed to sell')
+// 		// 	console.log(e)
+//     // }
+//     // res.end('item for sale and payment intent created');
     
 })
 
@@ -225,7 +236,7 @@ async function createPenalty(custId, price, perc) {
 }
 
 app.post('/purchase', function(req, res) {
-	console.log('item', req.body.items)
+	console.log('item', req)
 
 	fs.readFile('items.json', function(error, data) {//reading "database"
 		if (error) {
@@ -307,20 +318,20 @@ app.post('/acceptBid', function(req, res){
 	
 	let acceptItem = itemData.merch.find(x => x.id == itemId)
 	const buyerIntent = stripe.paymentIntents.create({//creating charge for last customer to place a bid 
-		amount: acceptItem.bidPrice,
+		amount: 200,
 		currency: 'myr',
 		confirmation_method: "manual",//we want to choose when to confirm (on dashboard)
 		capture_method: "manual",//we want to choose when to capture
 		confirm: true,
-		customer: acceptItem.recentBidder,
+		customer: "cus_IVuPFhiF9tzwc7",
 	}).then(function(result) {
-		console.log('Payment Intent created for buyer: ', acceptItem.recentBidder)
+		console.log('Payment Intent created for buyer: ', "cus_IVuPFhiF9tzwc7")
 
 		//create penalty for seller who accepted the bid payment
 		createPenalty(loggedIn.id, acceptItem.bidPrice, 0.15) //penalty is in decimal
 		.then(function(){
 			// console.log('Penalty created for seller:', loggedIn.id)
-			res.end('Bid Accepted')
+			res.end(buyerIntent)
 		}).catch(function(error){
 			console.log('Penalty not created for seller:', loggedIn.id)
 	
