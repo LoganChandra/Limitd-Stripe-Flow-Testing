@@ -331,7 +331,7 @@ app.post('/acceptBid', function(req, res){
 		createPenalty(loggedIn.id, acceptItem.bidPrice, 0.15) //penalty is in decimal
 		.then(function(){
 			// console.log('Penalty created for seller:', loggedIn.id)
-			res.end(buyerIntent)
+			res.end("returned")
 		}).catch(function(error){
 			console.log('Penalty not created for seller:', loggedIn.id)
 	
@@ -351,6 +351,49 @@ function uuidv4() {
 		return v.toString(16);
 	});
 }
+
+
+
+
+// FOR LIMITD
+app.post('/createToken', function(req, res){
+	
+	const token = stripe.tokens.create({
+		card: {
+		  number: req.body.number,
+		  exp_month: req.body.exp_month,
+		  exp_year: req.body.exp_year,
+		  cvc: req.body.cvc,
+		}
+	  }).then(function(result) {
+		console.log('card created: ', result)
+		res.json(result)
+
+	}).catch(function(error){
+		console.log('Card not created :', error)
+		res.json(error)
+
+	})
+	
+})
+
+app.post('/createCustomer', function(req, res){
+	
+	const customer = stripe.customers.create({
+		name: req.body.name,
+		email: req.body.email,
+		source: req.body.token,
+	}).then(function(result) {
+		console.log('customer created: ', result)
+		res.json(result)
+
+	}).catch(function(error){
+		console.log('customer not created :', error)
+		res.json(error)
+
+	})
+	
+})
 
   /* --------------------------------------------- TESTING --------------------------------------------- */
 
