@@ -381,7 +381,6 @@ app.post('/createCustomer', function(req, res){
 	
 	const customer = stripe.customers.create({
 		name: req.body.name,
-		email: req.body.email,
 		source: req.body.token,
 	}).then(function(result) {
 		console.log('customer created: ', result)
@@ -389,6 +388,43 @@ app.post('/createCustomer', function(req, res){
 
 	}).catch(function(error){
 		console.log('customer not created :', error)
+		res.json(error)
+
+	})
+	
+})
+
+app.post('/createPayment', function(req, res){
+	
+	const paymentIntent = stripe.paymentIntents.create({
+		amount: 200,
+		currency: 'myr',
+		customer: 'cus_IjlVEewYeAvMxQ',
+		payment_method: 'pm_1I8I1vBzuE6jzAWNjmOqE7PS',
+		confirm: true,
+		payment_method_types: ['card'],
+	  }).then(function(result) {
+		console.log('payment created: ', result)
+		res.json(result)
+
+	}).catch(function(error){
+		console.log('payment not created :', error)
+		res.json(error)
+
+	})
+	
+})
+
+app.post('/refund', function(req, res){
+	
+	const refund = stripe.refunds.create({
+		payment_intent: 'pi_1I8KfoBzuE6jzAWN3RZJw4nN',
+	  }).then(function(result) {
+		console.log('refund created: ', result)
+		res.json(result)
+
+	}).catch(function(error){
+		console.log('refund not created :', error)
 		res.json(error)
 
 	})
